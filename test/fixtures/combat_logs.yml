@@ -1,0 +1,11 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  character: one
+  enemy: one
+  log_entry: MyText
+
+two:
+  character: two
+  enemy: two
+  log_entry: MyText

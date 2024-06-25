@@ -1,0 +1,22 @@
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  pool: 5
+  username: postgres
+  password: your_password
+  host: localhost
+
+development:
+  <<: *default
+  database: mud_game_development
+
+test:
+  <<: *default
+  database: mud_game_test
+
+production:
+  <<: *default
+  database: mud_game_production
+  username: mud_game
+  password: <%= ENV['MUD_GAME_DATABASE_PASSWORD'] %>
+

@@ -1,0 +1,8 @@
+<h1><%= @character&.name || "Character not found" %></h1>
+<% if @character && @character.current_room %>
+  <p>Current Room: <%= @character.current_room.name %></p>
+  <p><%= @character.current_room.description %></p>
+  <p>Inventory: <%= @character.inventory_list %></p>
+<% else %>
+  <p>No room information available.</p>
+<% end %>

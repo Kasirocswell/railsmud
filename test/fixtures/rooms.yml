@@ -1,0 +1,17 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  name: MyString
+  description: MyText
+  north: one
+  south: one
+  east: one
+  west: one
+
+two:
+  name: MyString
+  description: MyText
+  north: two
+  south: two
+  east: two
+  west: two
