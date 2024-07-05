@@ -81,10 +81,22 @@ class Character < ApplicationRecord
   end
 
   def attack(target)
+    return unless target.alive? # Ensure the target is alive
+  
     damage = calculate_damage_against(target)
     target.receive_damage(damage, self)
-    CombatLog.create(character: self, enemy: target, combat: current_combat, log_entry: "#{name} attacked #{target.name} and dealt #{damage} damage.", attacker: self)
+    log_entry = "#{name} attacked #{target.name} and dealt #{damage} damage."
+  
+    # Create a combat log
+    CombatLog.create(character: self, enemy: target, combat: current_combat, log_entry: log_entry, attacker: self)
+  
+    # Check if the target is defeated
+    if target.health <= 0
+      target.die
+      CombatLog.create(character: self, enemy: target, combat: current_combat, log_entry: "#{target.name} has been defeated.", attacker: self)
+    end
   end
+  
 
   def receive_damage(amount, attacker)
     self.health -= amount

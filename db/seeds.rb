@@ -1,4 +1,7 @@
 # Clear existing data
+CombatLog.destroy_all
+CombatParticipant.destroy_all
+Combat.destroy_all
 Npc.destroy_all
 Item.destroy_all
 Enemy.destroy_all
@@ -15,14 +18,14 @@ skills.each { |skill| Skill.create!(name: skill) }
 
 # Create Abilities
 abilities = [
-  { name: "Human Perseverance", description: "Increases luck and charisma by 2 for 10 minutes.", level_required: 1, ability_type: "buff", race: "Human", character_class: nil },
-  { name: "Soldier's Strike", description: "Deals a powerful strike with a chance to stun the enemy.", level_required: 1, ability_type: "attack", race: nil, character_class: "Soldier" },
-  { name: "Elf Vision", description: "Increases intelligence and wisdom by 2 for 10 minutes.", level_required: 1, ability_type: "buff", race: "Elf", character_class: nil },
-  { name: "Mage's Fireball", description: "Casts a fireball that deals damage over time.", level_required: 1, ability_type: "attack", race: nil, character_class: "Mage" },
-  { name: "Human Resilience", description: "Increases constitution by 3 for 5 minutes.", level_required: 5, ability_type: "buff", race: "Human", character_class: nil },
-  { name: "Soldier's Shield Bash", description: "Bashes the enemy with a shield, reducing their defense.", level_required: 5, ability_type: "attack", race: nil, character_class: "Soldier" },
-  { name: "Elf Agility", description: "Increases dexterity and speed by 2 for 10 minutes.", level_required: 5, ability_type: "buff", race: "Elf", character_class: nil },
-  { name: "Mage's Ice Blast", description: "Casts an ice blast that slows the enemy.", level_required: 5, ability_type: "attack", race: nil, character_class: "Mage" }
+  { name: "Human Perseverance", description: "Increases luck and charisma by 2 for 10 minutes." },
+  { name: "Soldier's Strike", description: "Deals a powerful strike with a chance to stun the enemy." },
+  { name: "Elf Vision", description: "Increases intelligence and wisdom by 2 for 10 minutes." },
+  { name: "Mage's Fireball", description: "Casts a fireball that deals damage over time." },
+  { name: "Human Resilience", description: "Increases constitution by 3 for 5 minutes." },
+  { name: "Soldier's Shield Bash", description: "Bashes the enemy with a shield, reducing their defense." },
+  { name: "Elf Agility", description: "Increases dexterity and speed by 2 for 10 minutes." },
+  { name: "Mage's Ice Blast", description: "Casts an ice blast that slows the enemy." }
 ]
 abilities.each { |ability| Ability.create!(ability) }
 

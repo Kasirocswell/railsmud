@@ -2,13 +2,25 @@ class CombatsController < ApplicationController
   def create
     character = Character.find(params[:id])
     enemy = Enemy.find(params[:enemy_id])
-    combat = Combat.start_combat(character, enemy)
 
-    character.attack(enemy)
+    Rails.logger.debug { "Initializing combat between #{character.name} and #{enemy.name}" }
 
-    # Schedule the enemy to attack back
-    EnemyAttackJob.set(wait: enemy.attack_speed.seconds).perform_later(enemy.id, character.id)
+    combat = Combat.create!(enemy: enemy, status: Combat::PENDING)
+    combat.add_participant(character)
+    combat.add_participant(enemy)
+    combat.start_combat
 
-    render json: { combat: combat, log: combat.combat_logs.last }
+    Rails.logger.debug { "Combat status: #{combat.status}" }
+    if combat.ongoing?
+      Rails.logger.debug { "Combat is ongoing. Executing combat..." }
+      combat.execute_combat
+    else
+      Rails.logger.debug { "Combat not ongoing. Status: #{combat.status}" }
+    end
+
+    render json: { combat_logs: combat.combat_logs.pluck(:log_entry) }
+  rescue => e
+    Rails.logger.error { "Error during combat execution: #{e.message}" }
+    render json: { error: e.message }, status: :unprocessable_entity
   end
 end

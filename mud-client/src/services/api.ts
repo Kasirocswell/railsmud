@@ -60,11 +60,14 @@ export const attackEnemy = async (characterId: number, enemyId: number) => {
   });
 
   if (!response.ok) {
+    const errorText = await response.text();
+    console.error("Failed to initiate combat:", errorText);
     throw new Error("Failed to initiate combat");
   }
 
   return response.json();
 };
+
 
 export const activateAbility = async (characterId: number, abilityId: number, targetId: number) => {
   const response = await fetch(`${API_URL}/characters/${characterId}/activate_ability/${abilityId}/target_enemy/${targetId}`, {
@@ -162,6 +165,7 @@ export const fetchSkills = async (characterId: number) => {
   return response.json();
 };
 
+
 export const fetchCombatLogs = async (characterId: number) => {
   const response = await fetch(`${API_URL}/characters/${characterId}/combat_logs`);
   if (!response.ok) {
@@ -169,3 +173,5 @@ export const fetchCombatLogs = async (characterId: number) => {
   }
   return response.json();
 };
+
+

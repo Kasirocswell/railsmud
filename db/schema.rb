@@ -83,17 +83,17 @@ ActiveRecord::Schema[7.1].define(version: 2024_06_24_215625) do
 
   create_table "combat_participants", force: :cascade do |t|
     t.bigint "combat_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
     t.string "participant_type", null: false
     t.bigint "participant_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.index ["combat_id"], name: "index_combat_participants_on_combat_id"
     t.index ["participant_type", "participant_id"], name: "index_combat_participants_on_participant"
   end
 
   create_table "combats", force: :cascade do |t|
     t.bigint "enemy_id", null: false
-    t.integer "status", default: 0, null: false
+    t.integer "status", default: 0
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["enemy_id"], name: "index_combats_on_enemy_id"

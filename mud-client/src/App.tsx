@@ -16,7 +16,6 @@ import { CharacterCreationProvider } from './context/CharacterCreationContext';
 
 const App: React.FC = () => {
 
-  console.log(ChooseName)
   return (
     <AuthProvider>
       <Router>
