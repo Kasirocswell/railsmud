@@ -53,10 +53,11 @@ const Game: React.FC = () => {
         }
       }
     };
+  
     getCharacter();
   
     const consumer = createConsumer('ws://localhost:3000/cable');
-    const subscription = consumer.subscriptions.create(
+    const combatLogSubscription = consumer.subscriptions.create(
       { channel: 'CombatLogChannel', character_id: characterId },
       {
         connected() {
@@ -67,29 +68,35 @@ const Game: React.FC = () => {
         },
         received(data) {
           console.log('Received new log entry:', data);
-  
           try {
-            // Manually extract the content within the <template> tag
-            const templateStart = data.indexOf('<template>') + '<template>'.length;
-            const templateEnd = data.indexOf('</template>');
-            const templateContent = data.slice(templateStart, templateEnd).trim();
+            let logEntry: string | null = null;
+            if (typeof data === 'string') {
+              const templateStart = data.indexOf('<template>') + '<template>'.length;
+              const templateEnd = data.indexOf('</template>');
+              const templateContent = data.slice(templateStart, templateEnd).trim();
   
-            // Now parse the extracted content
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(templateContent, 'text/html');
-            const logEntryElement = doc.querySelector('div');
-            const logEntry = logEntryElement ? logEntryElement.textContent?.trim() : null;
-  
-            console.log('LOG ENTRY', logEntry);
+              const parser = new DOMParser();
+              const doc = parser.parseFromString(templateContent, 'text/html');
+              const logEntryElement = doc.querySelector('div');
+              logEntry = logEntryElement ? logEntryElement.textContent?.trim() || null : null;
+            } else if (typeof data === 'object' && data.log_entry) {
+              logEntry = data.log_entry;
+            }
   
             if (logEntry) {
+              console.log('LOG ENTRY', logEntry);
               setGameLog((prevLog) => {
                 const updatedLog = [
                   ...prevLog,
-                  { id: `${character?.id}-${Date.now()}-${logEntry}`, log_entry: logEntry },
+                  { id: `${character?.id}-${Date.now()}-${logEntry}`, log_entry: logEntry || '' },
                 ];
                 console.log('Updated game log:', updatedLog);
-                return updatedLog;
+  
+                // Filter out duplicates and ensure defined values
+                const uniqueLog = Array.from(new Set(updatedLog.map(log => log.log_entry)))
+                                       .map(log_entry => updatedLog.find(log => log.log_entry === log_entry))
+                                       .filter((log): log is { id: string; log_entry: string } => log !== undefined);
+                return uniqueLog;
               });
               scrollToBottom();
             } else {
@@ -102,14 +109,34 @@ const Game: React.FC = () => {
       }
     );
   
+    const gameSubscription = consumer.subscriptions.create(
+      { channel: 'GameChannel', character_id: characterId },
+      {
+        connected() {
+          console.log('Connected to GameChannel');
+        },
+        disconnected() {
+          console.log('Disconnected from GameChannel');
+        },
+        received(data) {
+          console.log('Received game data:', data);
+          setGameLog((prevLog) => [
+            ...prevLog,
+            { id: `${characterId}-${Date.now()}-${data.message}`, log_entry: data.message },
+          ]);
+          scrollToBottom();
+        },
+      }
+    );
+  
     return () => {
-      subscription.unsubscribe();
+      combatLogSubscription.unsubscribe();
+      gameSubscription.unsubscribe();
     };
   }, [characterId]);
   
   
-
-  const fetchAndSetCombatLogs = async (characterId: number) => {
+ const fetchAndSetCombatLogs = async (characterId: number) => {
     try {
       const logs = await fetchCombatLogs(characterId);
       console.log("Fetched combat logs:", logs); // Log fetched combat logs

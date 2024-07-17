@@ -42,7 +42,7 @@ class EnemiesController < ApplicationController
     private
   
     def enemy_params
-      params.require(:enemy).permit(:name, :description, :health, :attack_points, :room_id)
-    end
+      params.require(:enemy).permit(:name, :description, :health, :attack_points, :defense, :aggression_level, :room_id)
+    end    
   end
   
