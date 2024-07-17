@@ -14,16 +14,14 @@ class Enemy < ApplicationRecord
   after_create :schedule_aggression_check
 
   def attack(target)
-    return unless target.alive? # Ensure the target is alive
-  
+    return unless target.alive?
+
     damage = calculate_damage_against(target)
     target.receive_damage(damage, self)
     log_entry = "#{name} attacked #{target.name} and dealt #{damage} damage."
-  
-    # Create a combat log
+
     CombatLog.create(character: target, enemy: self, combat: current_combat, log_entry: log_entry, attacker: self)
-  
-    # Check if the target is defeated
+
     if target.health <= 0
       target.die
       CombatLog.create(character: target, enemy: self, combat: current_combat, log_entry: "#{target.name} has been defeated.", attacker: self)
@@ -72,6 +70,10 @@ class Enemy < ApplicationRecord
 
   def current_combat
     combats.where(status: :ongoing).last
+  end
+
+  def total_attack
+    attack_points
   end
 
   private

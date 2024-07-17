@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  room: one
+  character: one
+  enemy: one
+  loot: MyText
+
+two:
+  room: two
+  character: two
+  enemy: two
+  loot: MyText

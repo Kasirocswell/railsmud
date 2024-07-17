@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_06_24_215625) do
+ActiveRecord::Schema[7.1].define(version: 2024_07_17_143853) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -64,11 +64,12 @@ ActiveRecord::Schema[7.1].define(version: 2024_06_24_215625) do
     t.integer "current_room_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "combat_state", default: false
   end
 
   create_table "combat_logs", force: :cascade do |t|
-    t.bigint "character_id", null: false
-    t.bigint "enemy_id", null: false
+    t.bigint "character_id"
+    t.bigint "enemy_id"
     t.text "log_entry"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -87,6 +88,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_06_24_215625) do
     t.bigint "participant_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "next_attack_time", precision: nil
     t.index ["combat_id"], name: "index_combat_participants_on_combat_id"
     t.index ["participant_type", "participant_id"], name: "index_combat_participants_on_participant"
   end
@@ -97,6 +99,18 @@ ActiveRecord::Schema[7.1].define(version: 2024_06_24_215625) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["enemy_id"], name: "index_combats_on_enemy_id"
+  end
+
+  create_table "corpses", force: :cascade do |t|
+    t.bigint "room_id", null: false
+    t.bigint "character_id"
+    t.bigint "enemy_id"
+    t.text "loot"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["character_id"], name: "index_corpses_on_character_id"
+    t.index ["enemy_id"], name: "index_corpses_on_enemy_id"
+    t.index ["room_id"], name: "index_corpses_on_room_id"
   end
 
   create_table "enemies", force: :cascade do |t|
@@ -110,6 +124,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_06_24_215625) do
     t.integer "aggression_level", default: 0
     t.integer "speed", default: 5
     t.integer "defense"
+    t.boolean "combat_state", default: false
     t.index ["room_id"], name: "index_enemies_on_room_id"
   end
 
@@ -187,6 +202,9 @@ ActiveRecord::Schema[7.1].define(version: 2024_06_24_215625) do
   add_foreign_key "combat_logs", "enemies"
   add_foreign_key "combat_participants", "combats"
   add_foreign_key "combats", "enemies"
+  add_foreign_key "corpses", "characters"
+  add_foreign_key "corpses", "enemies"
+  add_foreign_key "corpses", "rooms"
   add_foreign_key "enemies", "rooms"
   add_foreign_key "equipments", "inventories"
   add_foreign_key "inventories", "characters"

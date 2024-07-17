@@ -11,3 +11,4 @@ consumer.subscriptions.create({ channel: "CombatLogChannel", character_id: chara
     combatLogsContainer.appendChild(newLogEntry);
   }
 })
+
