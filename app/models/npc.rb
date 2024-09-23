@@ -1,5 +1,7 @@
 class Npc < ApplicationRecord
-  belongs_to :room, optional: true
+  belongs_to :room
+
+  validates :room, presence: true
 
   def interact(character)
     "The NPC #{name} greets #{character.name}."

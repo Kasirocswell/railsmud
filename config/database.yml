@@ -2,8 +2,8 @@ default: &default
   adapter: postgresql
   encoding: unicode
   pool: 5
-  username: postgres
-  password: your_password
+  username: gregory.reeves
+  password: teachstone
   host: localhost
 
 development:
@@ -11,8 +11,14 @@ development:
   database: mud_game_development
 
 test:
-  <<: *default
-  database: mud_game_test
+  adapter: postgresql
+  encoding: unicode
+  database: railsmud_test
+  username: gregory.reeves
+  password: teachstone
+  host: localhost
+  pool: 5
+  timeout: 5000
 
 production:
   <<: *default

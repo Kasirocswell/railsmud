@@ -9,6 +9,8 @@ class Character < ApplicationRecord
   has_many :combats, through: :combat_participants
   has_many :combat_logs
 
+  attribute :alive, :boolean, default: true
+
   before_create :initialize_attributes
   after_create :create_inventory, :assign_starting_skills, :assign_starting_abilities
 
@@ -81,39 +83,36 @@ class Character < ApplicationRecord
   end
 
   def attack(target)
-    return unless target.alive? # Ensure the target is alive
+    return unless target.alive? && current_combat
   
     damage = calculate_damage_against(target)
-    target.receive_damage(damage, self)
-    log_entry = "#{name} attacked #{target.name} and dealt #{damage} damage."
+    log_entry = target.receive_damage(damage, self)
   
-    # Create a combat log
-    CombatLog.create(character: self, enemy: target, combat: current_combat, log_entry: log_entry, attacker: self)
-  
-    # Check if the target is defeated
     if target.health <= 0
       target.die
-      CombatLog.create(character: self, enemy: target, combat: current_combat, log_entry: "#{target.name} has been defeated.", attacker: self)
     end
+  
+    log_entry
   end
   
 
   def receive_damage(amount, attacker)
     self.health -= amount
+    self.health = 0 if self.health < 0
+    save!
+    
     log_entry = if self.health <= 0
-                  self.health = 0
-                  "#{name} has been defeated."
-                else
-                  "#{name} received #{amount} damage. Health: #{health}."
-                end
-    save
-    CombatLog.create(character: self, attacker: attacker, combat: current_combat, log_entry: log_entry, enemy: attacker)
+      "#{name} has been defeated."
+    else
+      "#{name} received #{amount} damage. Health: #{health}."
+    end
+  
     log_entry
   end
 
   def die
-    CombatLog.create(character: self, combat: current_combat, log_entry: "#{name} has been defeated.")
-    update!(alive: false)
+    update!(alive: false, health: 0)
+    "#{name} has been defeated."
   end
 
   def attack_speed
@@ -126,23 +125,27 @@ class Character < ApplicationRecord
     health > 0
   end
 
-  def calculate_damage_against(enemy)
+  def calculate_damage_against(target)
     attack_power = total_attack
-    defense_power = enemy.total_defense
-    damage = attack_power - defense_power
-    damage > 0 ? damage : 0
+    defense_power = target.respond_to?(:total_defense) ? target.total_defense : target.defense
+    [attack_power - defense_power, 0].max
   end
 
   def as_json(options = {})
-    super(options).merge({
+    super(options).merge(
       total_attack: total_attack,
       total_defense: total_defense,
       skills: character_skills.includes(:skill).map { |cs| { name: cs.skill.name, level: cs.level } },
       abilities: abilities.map { |ability| { name: ability.name, description: ability.description, level: ability.level } }
-    })
+    )
   end
 
   private
+
+  def create_inventory
+    build_inventory.save!
+  end
+
 
   def initialize_attributes
     self.health ||= 100
@@ -165,7 +168,7 @@ class Character < ApplicationRecord
 
   def assign_starting_skills
     Skill.all.each do |skill|
-      CharacterSkill.create!(character: self, skill: skill, level: 1)
+      character_skills.create!(skill: skill, level: 1)
     end
   end
 

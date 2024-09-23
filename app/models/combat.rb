@@ -3,13 +3,13 @@ class Combat < ApplicationRecord
   has_many :combat_logs
   belongs_to :enemy
 
-  PENDING = 0
-  ONGOING = 1
-  COMPLETED = 2
+  has_many :characters, through: :combat_participants, source: :participant, source_type: 'Character'
+
+  enum status: { pending: 0, ongoing: 1, completed: 2 }
 
   def start_combat
     Rails.logger.debug { "Starting combat: #{id}" }
-    update(status: ONGOING)
+    update(status: :ongoing)
 
     character = combat_participants.find_by(participant_type: 'Character').participant
     log_entry = "#{character.name} raises their weapon, ready for combat with #{enemy.name}."
@@ -118,8 +118,9 @@ class Combat < ApplicationRecord
   end
 
   def ongoing?
-    status == ONGOING
+    status == 'ongoing'
   end
+
 
   def calculate_attack_interval(participant)
     speed = participant.speed || 10 # default speed if not set

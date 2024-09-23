@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_07_17_143853) do
+ActiveRecord::Schema[7.1].define(version: 2024_09_23_163151) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -125,6 +125,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_07_17_143853) do
     t.integer "speed", default: 5
     t.integer "defense"
     t.boolean "combat_state", default: false
+    t.boolean "alive", default: true
     t.index ["room_id"], name: "index_enemies_on_room_id"
   end
 
@@ -189,6 +190,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_07_17_143853) do
     t.string "name", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.text "description"
     t.index ["name"], name: "index_skills_on_name", unique: true
   end
 

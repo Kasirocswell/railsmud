@@ -3,4 +3,5 @@ class Skill < ApplicationRecord
   has_many :characters, through: :character_skills
 
   validates :name, presence: true, uniqueness: true
+  validates :description, presence: true
 end

@@ -2,14 +2,15 @@
 class Enemy < ApplicationRecord
   belongs_to :room
   has_many :combat_participants, as: :participant, dependent: :destroy
-  has_many :combats, through: :combat_participants
+  has_many :combats
   has_many :combat_logs
 
   validates :name, presence: true
   validates :health, numericality: { only_integer: true }
   validates :attack_points, numericality: { only_integer: true }
   validates :defense, numericality: { only_integer: true, allow_nil: true }
-  validates :aggression_level, numericality: { only_integer: true, in: 0..10 }
+  validates :aggression_level, numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 10 }
+
 
   after_create :schedule_aggression_check
 
@@ -41,21 +42,43 @@ class Enemy < ApplicationRecord
 
   def receive_damage(amount, attacker)
     self.health -= amount
-    if self.health <= 0
-      self.health = 0
-      log_entry = "#{name} has been defeated."
-    else
-      log_entry = "#{name} received #{amount} damage. Health: #{health}."
-    end
-    save
-    CombatLog.create(character_id: attacker.id, enemy: self, combat: current_combat, log_entry: log_entry, attacker: attacker)
+    self.health = [health, 0].max  # Ensure health doesn't go below 0
+    save!
+  
+    log_entry = if health > 0
+                  "#{name} received #{amount} damage. Health: #{health}."
+                else
+                  die
+                  "#{name} has been defeated."
+                end
+  
+    CombatLog.create!(
+      enemy: self,
+      character: attacker.is_a?(Character) ? attacker : nil,
+      combat: current_combat,
+      log_entry: log_entry,
+      attacker: attacker || self  # Use self as attacker if no attacker is provided
+    )
+  
     log_entry
   end
 
   def die
-    CombatLog.create(enemy: self, combat: current_combat, log_entry: "#{name} has been defeated.")
-    update!(alive: false)
+    update!(alive: false, health: 0)
+    combat = current_combat
+    if combat
+      attacker = combat.characters.first
+      CombatLog.create!(
+        combat: combat,
+        enemy: self,
+        log_entry: "#{name} has been defeated.",
+        character: attacker,
+        attacker: attacker || self  # Use self as attacker if no character is present
+      )
+      combat.update(status: :completed)
+    end
   end
+
 
   def calculate_damage_against(character)
     attack_power = attack_points
@@ -69,7 +92,7 @@ class Enemy < ApplicationRecord
   end
 
   def current_combat
-    combats.where(status: :ongoing).last
+    combats.find_by(status: :ongoing)
   end
 
   def total_attack
